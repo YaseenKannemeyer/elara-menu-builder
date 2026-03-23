@@ -76,7 +76,7 @@ const MENU_DATA = {
       description:
         "Atlantic salmon with lemon beurre blanc, asparagus & new potatoes",
       image:
-        "https://images.unsplash.com/photo-1485921325833-c519793a4833?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?w=600&auto=format&fit=crop&q=80",
       tags: ["gluten-free"],
     },
     {
@@ -94,7 +94,7 @@ const MENU_DATA = {
       description:
         "New Zealand lamb with rosemary jus, dauphinoise & seasonal greens",
       image:
-        "https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1654722487269-29469154bf82?w=600&auto=format&fit=crop&q=80",
       tags: ["gluten-free"],
     },
     {
