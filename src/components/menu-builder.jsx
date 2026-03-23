@@ -402,14 +402,26 @@ const css = `
 
   .mb-alert { background: #fef9f0; border: 1px solid #f0d090; border-radius: 8px; padding: 10px 14px; font-size: 0.77rem; color: #8a6020; margin-bottom: 1rem; }
 
+  /* ── CART SIDEBAR ── */
   .cart-title { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #ece8e0; }
   .cart-empty { font-size: 0.76rem; color: #bbb; text-align: center; padding: 2rem 0; font-weight: 300; line-height: 1.6; }
   .cart-cat-label { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #c9a96e; margin-top: 1rem; margin-bottom: 0.4rem; }
+
+  /* ── CHANGE 1: cart item now has remove button ── */
   .cart-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 0.76rem; border-bottom: 1px dashed #f0ece4; }
+  .cart-item:last-child { border-bottom: none; }
   .cart-thumb { width: 30px; height: 30px; border-radius: 5px; object-fit: cover; flex-shrink: 0; background: #f0ece4; }
   .cart-item-name { color: #444; flex: 1; line-height: 1.3; }
+  .cart-remove-btn { background: none; border: none; color: #ccc; cursor: pointer; font-size: 0.95rem; padding: 2px 5px; border-radius: 4px; transition: color 0.2s, background 0.2s; flex-shrink: 0; line-height: 1; }
+  .cart-remove-btn:hover { color: #c0392b; background: #fdf0f0; }
+
   .cart-notice { background: #f5f0e8; border-radius: 8px; padding: 10px 12px; font-size: 0.72rem; color: #8a7050; margin-top: 1rem; line-height: 1.55; }
   .cart-meta { font-size: 0.67rem; color: #bbb; margin-top: 0.75rem; line-height: 1.5; }
+
+  /* ── CHANGE 2: edit menu button in quote step ── */
+  .mb-edit-menu-bar { margin-bottom: 1.4rem; }
+  .mb-btn-edit { background: transparent; color: #c9a96e; border: 1px solid #c9a96e; border-radius: 10px; padding: 10px 20px; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; letter-spacing: 0.05em; }
+  .mb-btn-edit:hover { background: #c9a96e; color: #fff; }
 
   .quote-event-details { background: #f5f0e8; border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 1.4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
   .qed-label { font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: #aaa; font-weight: 500; margin-bottom: 2px; }
@@ -487,15 +499,15 @@ function FoodImage({ src, alt, imgClass, skeletonClass }) {
 }
 
 // ─────────────────────────────────────────────
-// CART SIDEBAR
+// CART SIDEBAR — with remove buttons per item
 // ─────────────────────────────────────────────
 function CartSidebar() {
-  const { state } = useMenu();
+  const { state, dispatch } = useMenu();
   const cats = [
-    { label: "Starters", items: state.selections.starters },
-    { label: "Mains", items: state.selections.mains },
-    { label: "Desserts", items: state.selections.desserts },
-    { label: "Beverages", items: state.selections.beverages },
+    { label: "Starters", key: "starters", items: state.selections.starters },
+    { label: "Mains", key: "mains", items: state.selections.mains },
+    { label: "Desserts", key: "desserts", items: state.selections.desserts },
+    { label: "Beverages", key: "beverages", items: state.selections.beverages },
   ];
   const hasItems = cats.some((c) => c.items.length > 0);
   const totalItems = cats.reduce((s, c) => s + c.items.length, 0);
@@ -512,30 +524,45 @@ function CartSidebar() {
           </span>
         )}
       </div>
+
       {!hasItems && (
         <div className="cart-empty">
           No items selected yet — add dishes to see your menu build up here.
         </div>
       )}
-      {cats.map(
-        (cat) =>
-          cat.items.length > 0 && (
-            <div key={cat.label}>
-              <div className="cart-cat-label">{cat.label}</div>
-              {cat.items.map((item) => (
-                <div className="cart-item" key={item.id}>
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="cart-thumb"
-                    onError={(e) => (e.target.style.display = "none")}
-                  />
-                  <span className="cart-item-name">{item.name}</span>
-                </div>
-              ))}
-            </div>
-          ),
+
+      {/* ── CHANGE 1: each cart item now has a × remove button ── */}
+      {cats.map((cat) =>
+        cat.items.length > 0 ? (
+          <div key={cat.label}>
+            <div className="cart-cat-label">{cat.label}</div>
+            {cat.items.map((item) => (
+              <div className="cart-item" key={item.id}>
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="cart-thumb"
+                  onError={(e) => (e.target.style.display = "none")}
+                />
+                <span className="cart-item-name">{item.name}</span>
+                <button
+                  className="cart-remove-btn"
+                  title="Remove item"
+                  onClick={() =>
+                    dispatch({
+                      type: "REMOVE_ITEM",
+                      payload: { category: cat.key, id: item.id },
+                    })
+                  }
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : null,
       )}
+
       {hasItems && (
         <div className="cart-notice">
           Mlangeni Grand Hospitality will prepare a full itemised price quote
@@ -984,10 +1011,8 @@ function QuoteStep() {
       setSendErrors(e);
       return;
     }
-
     setSending(true);
     setSendError("");
-
     try {
       const res = await fetch("/api/send-quote", {
         method: "POST",
@@ -1002,7 +1027,6 @@ function QuoteStep() {
           selections: state.selections,
         }),
       });
-
       if (!res.ok) throw new Error("Server error");
       dispatch({ type: "SEND_QUOTE" });
     } catch (err) {
@@ -1039,6 +1063,16 @@ function QuoteStep() {
       <div className="mb-step-title">Your Menu Summary</div>
       <div className="mb-step-sub">
         Review your selections before submitting — edit anytime
+      </div>
+
+      {/* ── CHANGE 2: Edit Menu button at the top of the quote summary ── */}
+      <div className="mb-edit-menu-bar">
+        <button
+          className="mb-btn-edit"
+          onClick={() => dispatch({ type: "GO_TO_STEP", payload: 0 })}
+        >
+          ← Edit Menu Selections
+        </button>
       </div>
 
       <div className="quote-event-details">
@@ -1122,12 +1156,6 @@ function QuoteStep() {
             onClick={() => dispatch({ type: "PREV_STEP" })}
           >
             ← Edit Details
-          </button>
-          <button
-            className="mb-btn-secondary"
-            onClick={() => dispatch({ type: "GO_TO_STEP", payload: 0 })}
-          >
-            Edit Menu
           </button>
           <button className="mb-btn-gold" onClick={() => setShowSend(true)}>
             Request Price Quote →
